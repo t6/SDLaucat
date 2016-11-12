@@ -29,6 +29,15 @@
 #define nitems(x) (sizeof((x)) / sizeof((x)[0]))
 #endif
 
+#if defined(__CYGWIN__)
+#include "strtonum.c"
+#endif
+
+/* Something defines main=SDL_main.  Do not want for this program! */
+#ifdef main
+#undef main
+#endif
+
 struct sdl_fmt {
 	SDL_AudioFormat fmt;
 	unsigned int bits;
@@ -127,8 +136,8 @@ main(int argc, char *argv[])
 	SDL_zero(want);
 	want.channels = 2;
 	want.format = AUDIO_S16LSB;
-	want.freq = 48000;
-	want.samples = 512;
+	want.freq = 44100;
+	want.samples = 1024;
 
 	while ((ch = getopt(argc, argv, "b:c:de:f:g:lr:s:")) != -1) {
 		switch (ch) {
@@ -217,6 +226,7 @@ main(int argc, char *argv[])
 	par.appbufsz = have.size;
 	par.round = have.samples;
 	par.rchan = have.channels;
+	par.rate = have.freq;
 
 	if (!sio_setpar(hdl, &par))
 		errx(1, "sio_setpar");
