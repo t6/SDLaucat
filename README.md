@@ -54,8 +54,8 @@ The Task Manager for now ;-)
 
 # Wanted
 
-It should be very easy to extend this to use recording devices connected to
-your [sndio] server and stream them into `CABLE Output`, so that applications
+It should be very easy to extend this to use recording devices from an
+[sndio] server and stream them into `CABLE Output`, so that applications
 like e.g. Skype can use them via `CABLE Input`.
 
 # License
