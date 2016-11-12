@@ -180,7 +180,7 @@ main(int argc, char *argv[])
 		case '?':
 		default:
 			fprintf(stderr,
-				"usage: SDLcat [-b size] [-c chan] [-d] [-e enc] [-f sndiodev] [-g sdldev]\n"
+				"usage: SDLaucat [-b size] [-c chan] [-d] [-e enc] [-f sndiodev] [-g sdldev]\n"
 				"\t[-l] [-r rate] [-s samples]\n");
 			return 1;
 		}

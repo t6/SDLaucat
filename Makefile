@@ -8,7 +8,7 @@ CFLAGS +=	-Wall -I/usr/local/include ${SDL2_CFLAGS}
 LDFLAGS +=	-L/usr/local/lib
 LDLIBS +=	-lsndio ${SDL2_LIBS}
 
-all: SDLcat
+all: SDLaucat
 
 clean:
-	rm -f SDLcat SDLcat.exe
+	rm -f SDLaucat SDLaucat.exe
