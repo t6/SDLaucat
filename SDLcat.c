@@ -14,6 +14,7 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
+#include <sys/resource.h>
 #include <err.h>
 #include <errno.h>
 #include <SDL.h>
@@ -187,6 +188,9 @@ main(int argc, char *argv[])
 
 	if (daemonize && daemon(0, 0) < 0)
 		err(1, "daemon");
+
+	if (setpriority(PRIO_PROCESS, 0, -20) < 0)
+		err(1, "setpriority");
 
 	quitsem = SDL_CreateSemaphore(0);
 
