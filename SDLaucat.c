@@ -189,7 +189,7 @@ main(int argc, char *argv[])
 	if (daemonize && daemon(0, 0) < 0)
 		err(1, "daemon");
 
-	if (setpriority(PRIO_PROCESS, 0, -20) < 0)
+	if (daemonize && setpriority(PRIO_PROCESS, 0, -20) < 0)
 		err(1, "setpriority");
 
 	quitsem = SDL_CreateSemaphore(0);
