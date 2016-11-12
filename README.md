@@ -5,7 +5,7 @@ Stream audio recorded from SDL to your [sndio] server
 [![Vinyl Cat](https://img.youtube.com/vi/K7dcSr04G8s/0.jpg)](https://www.youtube.com/watch?v=K7dcSr04G8s)
 
 Combined with [VB-Cable] (or similar software) on Windows, you can stream
-whatever system audio on Windows to your [sndio] server over the
+system audio on Windows to your [sndio] server over the
 network running on Linux, [FreeBSD], or [OpenBSD].  Latency is good
 enough to play games and/or watch movies.
 
