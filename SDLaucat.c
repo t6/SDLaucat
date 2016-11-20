@@ -22,16 +22,14 @@
 #include <sndio.h>
 #include <unistd.h>
 
+#include "bsd-compat.h"
+
 #define NCHAN_MAX 16
 #define RATE_MIN 4000
 #define RATE_MAX 192000
 
 #ifndef nitems
 #define nitems(x) (sizeof((x)) / sizeof((x)[0]))
-#endif
-
-#if defined(__CYGWIN__)
-#include "strtonum.c"
 #endif
 
 /* Something defines main=SDL_main.  Do not want for this program! */

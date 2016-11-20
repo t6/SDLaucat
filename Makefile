@@ -4,11 +4,22 @@
 SDL2_CFLAGS =	`sdl2-config --cflags | sed -e 's/-Dmain=SDL_main//g'`
 SDL2_LIBS =	`sdl2-config --libs | sed -e 's/-mwindows//g' -e 's/-lSDL2main//g'`
 
-CFLAGS +=	-Wall -I/usr/local/include ${SDL2_CFLAGS}
-LDFLAGS +=	-L/usr/local/lib
-LDLIBS +=	-lsndio ${SDL2_LIBS}
+CFLAGS +=	-Wall -Isndio/bsd-compat -Isndio/libsndio ${SDL2_CFLAGS}
+CFLAGS +=	-DDEBUG
+LDLIBS +=	${SDL2_LIBS}
 
-all: SDLaucat
+OBJS= 	sndio/libsndio/sio_aucat.o \
+	sndio/libsndio/sio.o \
+	sndio/libsndio/aucat.o \
+	sndio/libsndio/debug.o \
+	sndio/bsd-compat/issetugid.o \
+	sndio/bsd-compat/strlcpy.o \
+	sndio/bsd-compat/strtonum.o \
+	SDLaucat.o
+
+SDLaucat: ${OBJS}
+	${CC} -o SDLaucat ${LDFLAGS} ${OBJS} ${LDLIBS}
 
 clean:
-	rm -f SDLaucat SDLaucat.exe
+	rm -f SDLaucat SDLaucat.o SDLaucat.exe \
+		sndio/bsd-compat/*.o sndio/libsndio/*.o
