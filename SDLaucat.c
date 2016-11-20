@@ -28,6 +28,10 @@
 #define RATE_MIN 4000
 #define RATE_MAX 192000
 
+#ifndef MAX_PATH
+#define MAX_PATH 1024
+#endif
+
 #ifndef nitems
 #define nitems(x) (sizeof((x)) / sizeof((x)[0]))
 #endif
@@ -125,6 +129,7 @@ main(int argc, char *argv[])
 	struct sio_par par;
 	struct sio_hdl *hdl;
 	const char *sio_devname, *sdl_devname;
+	char aucat_cookie_dir[MAX_PATH];
 	int sdl_devid;
 	SDL_AudioDeviceID rdev;
 
@@ -138,8 +143,14 @@ main(int argc, char *argv[])
 	want.freq = 44100;
 	want.samples = 1024;
 
-	while ((ch = getopt(argc, argv, "b:c:de:f:g:lr:s:")) != -1) {
+	while ((ch = getopt(argc, argv, "a:b:c:de:f:g:lr:s:")) != -1) {
 		switch (ch) {
+		case 'a':
+			if (snprintf(aucat_cookie_dir, sizeof(aucat_cookie_dir), "HOME=%s", optarg) < 0)
+				err(1, "asprintf");
+			if (putenv(aucat_cookie_dir) < 0)
+				err(1, "putenv");
+			break;
 		case 'b':
 			want.size = xparsenum(optarg, 1, RATE_MAX);
 			break;
@@ -179,7 +190,7 @@ main(int argc, char *argv[])
 		default:
 			fprintf(stderr,
 				"usage: SDLaucat [-b size] [-c chan] [-d] [-e enc] [-f sndiodev] [-g sdldev]\n"
-				"\t[-l] [-r rate] [-s samples]\n");
+				"\t[-l] [-r rate] [-s samples] [-a aucat_cookie_dir]\n");
 			return 1;
 		}
 	}
