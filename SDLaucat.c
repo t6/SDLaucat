@@ -74,12 +74,12 @@ static struct sdl_fmt formats[] = {
 	{ AUDIO_S32LSB, 32, 4, 1, 1, 0, "s32le" },
 };
 
-static SDL_sem *quitsem;
+static int quit_flag = 0;
 
 void
 sigint(int sig)
 {
-	SDL_SemPost(quitsem);
+	quit_flag = 1;
 }
 
 void
@@ -88,7 +88,7 @@ audio_cb(void* userdata, Uint8* stream, int len)
 	struct sio_hdl *hdl = (struct sio_hdl*)userdata;
 
 	if (sio_write(hdl, stream, len) == 0)
-		SDL_SemPost(quitsem);
+		quit_flag = 1;
 }
 
 unsigned int
@@ -201,8 +201,6 @@ main(int argc, char *argv[])
 	if (daemonize && setpriority(PRIO_PROCESS, 0, -20) < 0)
 		err(1, "setpriority");
 
-	quitsem = SDL_CreateSemaphore(0);
-
 	hdl = sio_open(sio_devname, SIO_PLAY, 0);
 	if (hdl == NULL)
 		errx(1, "sio_open: %s", sio_devname);
@@ -267,9 +265,14 @@ main(int argc, char *argv[])
 	if (signal(SIGTERM, sigint) == SIG_ERR)
 		err(1, "signal");
 
-	SDL_SemWait(quitsem);
+	/*
+	 * It's important to not use any SDL related functions here if you
+	 * want Cygwin signals to work etc.
+	 */
+	while (!quit_flag) {
+		sleep(3600);
+	}
 
-	SDL_DestroySemaphore(quitsem);
 	SDL_Quit();
 	sio_close(hdl);
 
