@@ -129,7 +129,7 @@ main(int argc, char *argv[])
 	struct sio_par par;
 	struct sio_hdl *hdl;
 	const char *sio_devname, *sdl_devname;
-	char aucat_cookie_dir[MAX_PATH];
+	char aucat_cookie_path[MAX_PATH];
 	int sdl_devid;
 	SDL_AudioDeviceID rdev;
 
@@ -146,9 +146,9 @@ main(int argc, char *argv[])
 	while ((ch = getopt(argc, argv, "a:b:c:de:f:g:lr:s:")) != -1) {
 		switch (ch) {
 		case 'a':
-			if (snprintf(aucat_cookie_dir, sizeof(aucat_cookie_dir), "HOME=%s", optarg) < 0)
+			if (snprintf(aucat_cookie_path, sizeof(aucat_cookie_path), "AUCAT_COOKIE_PATH=%s", optarg) < 0)
 				err(1, "asprintf");
-			if (putenv(aucat_cookie_dir) < 0)
+			if (putenv(aucat_cookie_path) < 0)
 				err(1, "putenv");
 			break;
 		case 'b':
@@ -190,7 +190,7 @@ main(int argc, char *argv[])
 		default:
 			fprintf(stderr,
 				"usage: SDLaucat [-b size] [-c chan] [-d] [-e enc] [-f sndiodev] [-g sdldev]\n"
-				"\t[-l] [-r rate] [-s samples] [-a aucat_cookie_dir]\n");
+				"\t[-l] [-r rate] [-s samples] [-a aucat_cookie_path]\n");
 			return 1;
 		}
 	}
