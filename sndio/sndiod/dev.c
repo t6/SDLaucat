@@ -1427,7 +1427,7 @@ slot_new(struct dev *d, char *who, struct slotops *ops, void *arg, int mode)
 	struct slot *s;
 
 	/*
-	 * create a ``valid'' control name (lowcase, remove [^a-z], trucate)
+	 * create a ``valid'' control name (lowcase, remove [^a-z], truncate)
 	 */
 	for (i = 0, p = who; ; p++) {
 		if (i == SLOT_NAMEMAX - 1 || *p == '\0') {
@@ -1515,19 +1515,19 @@ slot_new(struct dev *d, char *who, struct slotops *ops, void *arg, int mode)
 found:
 	if (!dev_ref(d))
 		return NULL;
+	if ((mode & d->mode) != mode) {
+		if (log_level >= 1) {
+			slot_log(s);
+			log_puts(": requested mode not supported\n");
+		}
+		dev_unref(d);
+		return 0;
+	}
 	s->dev = d;
 	s->ops = ops;
 	s->arg = arg;
 	s->pstate = SLOT_INIT;
 	s->tstate = MMC_OFF;
-
-	if ((mode & s->dev->mode) != mode) {
-		if (log_level >= 1) {
-			slot_log(s);
-			log_puts(": requested mode not supported\n");
-		}
-		return 0;
-	}
 	s->mode = mode;
 	aparams_init(&s->par);
 	if (s->mode & MODE_PLAY) {
@@ -1713,6 +1713,23 @@ slot_attach(struct slot *s)
 		}
 
 		/*
+		 * cmap_copy() doesn't write samples in all channels,
+	         * for instance when mono->stereo conversion is
+	         * disabled. So we have to prefill cmap_copy() output
+	         * with silence.
+	         */
+		if (s->sub.resampbuf) {
+			memset(s->sub.resampbuf, 0,
+			    d->round * slot_nch * sizeof(adata_t));
+		} else if (s->sub.encbuf) {
+			memset(s->sub.encbuf, 0,
+			    s->round * slot_nch * sizeof(adata_t));
+		} else {
+			memset(s->sub.buf.data, 0,
+			    s->appbufsz * slot_nch * sizeof(adata_t));
+		}
+
+		/*
 		 * N-th recorded block is the N-th played block
 		 */
 		s->sub.prime = -startpos / (int)s->round;
@@ -1824,7 +1841,7 @@ slot_detach(struct slot *s)
 #endif
 	for (ps = &s->dev->slot_list; *ps != s; ps = &(*ps)->next) {
 #ifdef DEBUG
-		if (s == NULL) {
+		if (*ps == NULL) {
 			slot_log(s);
 			log_puts(": can't detach, not on list\n");
 			panic();

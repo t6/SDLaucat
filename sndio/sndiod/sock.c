@@ -541,6 +541,10 @@ sock_wdata(struct sock *f)
 		return 1;
 	}
 	while (f->wtodo > 0) {
+		/*
+		 * f->slot and f->midi are set by sock_hello(), so
+		 * count is always properly initialized
+		 */
 		if (f->slot)
 			data = abuf_rgetblk(&f->slot->sub.buf, &count);
 		else if (f->midi)
@@ -622,7 +626,7 @@ sock_setpar(struct sock *f)
 	if (AMSG_ISSET(rchan) && (s->mode & MODE_RECMASK)) {
 		if (rchan < 1)
 			rchan = 1;
-		if (rchan > NCHAN_MAX)
+		else if (rchan > NCHAN_MAX)
 			rchan = NCHAN_MAX;
 		s->sub.slot_cmin = f->opt->rmin;
 		s->sub.slot_cmax = f->opt->rmin + rchan - 1;
@@ -646,7 +650,7 @@ sock_setpar(struct sock *f)
 	if (AMSG_ISSET(pchan) && (s->mode & MODE_PLAY)) {
 		if (pchan < 1)
 			pchan = 1;
-		if (pchan > NCHAN_MAX)
+		else if (pchan > NCHAN_MAX)
 			pchan = NCHAN_MAX;
 		s->mix.slot_cmin = f->opt->pmin;
 		s->mix.slot_cmax = f->opt->pmin + pchan - 1;
@@ -670,7 +674,7 @@ sock_setpar(struct sock *f)
 	if (AMSG_ISSET(rate)) {
 		if (rate < RATE_MIN)
 			rate = RATE_MIN;
-		if (rate > RATE_MAX)
+		else if (rate > RATE_MAX)
 			rate = RATE_MAX;
 		s->round = dev_roundof(d, rate);
 		s->rate = rate;
@@ -1509,6 +1513,11 @@ sock_write(struct sock *f)
 	case SOCK_WMSG:
 		if (!sock_wmsg(f))
 			return 0;
+		/*
+		 * f->wmsg is either build by sock_buildmsg() or
+		 * copied from f->rmsg (in the SOCK_RRET state), so
+		 * it's safe.
+		 */
 		if (ntohl(f->wmsg.cmd) != AMSG_DATA) {
 			f->wstate = SOCK_WIDLE;
 			f->wtodo = 0xdeadbeef;

@@ -14,13 +14,11 @@
  * OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <fcntl.h>
 #include <errno.h>
 #include <limits.h>
 #include <poll.h>
 #include <signal.h>
 #include <sndio.h>
-#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -256,6 +254,10 @@ slot_new(char *path, int mode, struct aparams *par, int hdr,
 			log_puts("..");
 			log_puti(s->afile.endpos);
 		}
+		if (s->mode == SIO_PLAY) {
+			log_puts(", vol ");
+			log_puti(s->vol);
+		}
 		log_puts("\n");
 	}
 	s->next = slot_list;
@@ -344,6 +346,23 @@ slot_init(struct slot *s)
 			enc_init(&s->conv, &s->afile.par, slot_nch);
 			s->convbuf =
 			    xmalloc(s->round * slot_nch * sizeof(adata_t));
+		}
+
+		/*
+		 * cmap_copy() doesn't write samples in all channels,
+	         * for instance when mono->stereo conversion is
+	         * disabled. So we have to prefill cmap_copy() output
+	         * with silence.
+	         */
+		if (s->resampbuf) {
+			memset(s->resampbuf, 0,
+			    dev_round * slot_nch * sizeof(adata_t));
+		} else if (s->convbuf) {
+			memset(s->convbuf, 0,
+			    s->round * slot_nch * sizeof(adata_t));
+		} else {
+			memset(s->buf.data, 0,
+			    bufsz * slot_nch * sizeof(adata_t));
 		}
 	}
 	s->pstate = SLOT_INIT;
@@ -830,11 +849,11 @@ dev_mmcloc(int hr, int min, int sec, int fr, int cent, int fps)
 {
 	long long pos;
 
-	pos = dev_rate * hr * 3600 +
-	    dev_rate * min * 60 +
-	    dev_rate * sec +
-	    dev_rate * fr / fps +
-	    dev_rate * cent / (100 * fps);
+	pos = (long long)dev_rate * hr * 3600 +
+	    (long long)dev_rate * min * 60 +
+	    (long long)dev_rate * sec +
+	    (long long)dev_rate * fr / fps +
+	    (long long)dev_rate * cent / (100 * fps);
 	if (dev_pos == pos)
 		return;
 	dev_pos = pos;
